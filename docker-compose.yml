@@ -1,0 +1,27 @@
+services:
+  veil-net:
+    image: docker.io/metacubex/mihomo:Alpha
+    container_name: veil-net
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ./veil.yml:/root/.config/mihomo/config.yaml:ro
+    dns:
+      - 127.0.0.1
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+
+  veil-box:
+    image: ubuntu:24.04
+    command: ["sleep", "infinity"]
+    stdin_open: true
+    tty: true
+    container_name: veil-box
+    network_mode: "service:veil-net"
+    depends_on:
+      - veil-net
+    restart: unless-stopped
