@@ -16,12 +16,20 @@ services:
       - "3000:3000"
 
   veil-box:
-    image: ubuntu:24.04
-    command: ["sleep", "infinity"]
+    image: ghcr.io/therainisme/veil-box:latest
+    container_name: veil-box
+    privileged: true
+    cgroup: host
+    tmpfs:
+      - /run
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - /var/run/docker.sock:/var/run/docker.sock
     stdin_open: true
     tty: true
-    container_name: veil-box
     network_mode: "service:veil-net"
     depends_on:
       - veil-net
+    stop_signal: SIGRTMIN+3
     restart: unless-stopped
