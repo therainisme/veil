@@ -12,8 +12,6 @@ services:
     dns:
       - 127.0.0.1
     restart: unless-stopped
-    ports:
-      - "3000:3000"
 
   veil-box:
     image: ghcr.io/therainisme/veil-box:latest
