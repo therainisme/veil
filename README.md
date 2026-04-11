@@ -21,7 +21,7 @@ docker compose up -d
 4. Enter the box:
 
 ```bash
-docker exec -it veil-box bash
+docker exec -it -u veil veil-box bash
 ```
 
 ## Update

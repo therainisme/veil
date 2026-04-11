@@ -12,6 +12,7 @@ RUN apt-get update && \
       nano \
       tmux \
       htop \
+      sudo \
       iproute2 \
       iputils-ping \
       traceroute \
@@ -20,9 +21,16 @@ RUN apt-get update && \
       systemd \
       systemd-sysv \
       dbus && \
+    useradd -m -s /bin/bash veil && \
+    usermod -aG sudo veil && \
+    passwd -d veil && \
+    printf 'veil ALL=(ALL) NOPASSWD:ALL\n' > /etc/sudoers.d/veil && \
+    chmod 0440 /etc/sudoers.d/veil && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     mkdir -p /var/run/sshd
+
+WORKDIR /home/veil
 
 STOPSIGNAL SIGRTMIN+3
 CMD ["/sbin/init"]
