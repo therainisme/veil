@@ -3,16 +3,11 @@ FROM ${BASE_IMAGE}
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN if ! id -u veil >/dev/null 2>&1; then \
-      useradd -m -s /bin/bash veil; \
-    fi && \
-    apt-get update && \
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
       curl \
       gnupg \
-      dpkg \
       apt-transport-https \
-      lsb-release \
       ca-certificates && \
     install -m 0755 -d /etc/apt/keyrings && \
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker-ce.gpg && \
@@ -24,13 +19,10 @@ RUN if ! id -u veil >/dev/null 2>&1; then \
       docker-ce-cli \
       containerd.io \
       docker-buildx-plugin \
-      docker-compose-plugin \
-      docker-ce-rootless-extras && \
+      docker-compose-plugin && \
+    usermod -aG docker veil && \
+    systemctl enable containerd.service docker.service && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY docker-sock-setup.sh /usr/local/bin/docker-sock-setup
-RUN chmod 0755 /usr/local/bin/docker-sock-setup
-
-ENTRYPOINT ["/usr/local/bin/docker-sock-setup"]
 CMD ["/sbin/init"]
