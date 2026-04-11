@@ -1,0 +1,33 @@
+services:
+  veil-net:
+    image: docker.io/metacubex/mihomo:Alpha
+    container_name: veil-net
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    volumes:
+      - ./veil.yml:/root/.config/mihomo/config.yaml:ro
+    dns:
+      - 127.0.0.1
+    restart: unless-stopped
+
+  veil-actions-runner:
+    image: ghcr.io/therainisme/veil-actions-runner:latest
+    container_name: veil-actions-runner
+    privileged: true
+    cgroup: host
+    tmpfs:
+      - /run
+      - /run/lock
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - /var/run/docker.sock:/var/run/docker.sock
+    stdin_open: true
+    tty: true
+    network_mode: "service:veil-net"
+    depends_on:
+      - veil-net
+    stop_signal: SIGRTMIN+3
+    restart: unless-stopped

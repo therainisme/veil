@@ -11,7 +11,7 @@ permissions:
   packages: write
 
 concurrency:
-  group: build-push-tag
+  group: build-push-images
   cancel-in-progress: true
 
 jobs:
@@ -22,8 +22,10 @@ jobs:
       - name: Lowercase owner
         run: echo "OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
 
-      - name: Set image repository
-        run: echo "IMAGE_REPO=ghcr.io/${OWNER}/veil-box" >> "$GITHUB_ENV"
+      - name: Set image repositories
+        run: |
+          echo "BOX_IMAGE_REPO=ghcr.io/${OWNER}/veil-box" >> "$GITHUB_ENV"
+          echo "RUNNER_IMAGE_REPO=ghcr.io/${OWNER}/veil-actions-runner" >> "$GITHUB_ENV"
 
       - name: Checkout
         uses: actions/checkout@v4
@@ -38,7 +40,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push amd64 image
+      - name: Build and push veil-box amd64 image
         uses: docker/build-push-action@v6
         with:
           context: ./veil-box
@@ -46,9 +48,26 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ${{ env.IMAGE_REPO }}:latest
-            ${{ env.IMAGE_REPO }}:${{ github.sha }}
+            ${{ env.BOX_IMAGE_REPO }}:latest
+            ${{ env.BOX_IMAGE_REPO }}:${{ github.sha }}
 
-      - name: Add tag alias
+      - name: Build and push veil-actions-runner amd64 image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./veil-actions-runner
+          platforms: linux/amd64
+          push: true
+          provenance: false
+          build-args: |
+            BASE_IMAGE=${{ env.BOX_IMAGE_REPO }}:${{ github.sha }}
+          tags: |
+            ${{ env.RUNNER_IMAGE_REPO }}:latest
+            ${{ env.RUNNER_IMAGE_REPO }}:${{ github.sha }}
+
+      - name: Add veil-box tag alias
         if: github.ref_type == 'tag'
-        run: docker buildx imagetools create -t "${IMAGE_REPO}:${GITHUB_REF_NAME}" "${IMAGE_REPO}:${GITHUB_SHA}"
+        run: docker buildx imagetools create -t "${BOX_IMAGE_REPO}:${GITHUB_REF_NAME}" "${BOX_IMAGE_REPO}:${GITHUB_SHA}"
+
+      - name: Add veil-actions-runner tag alias
+        if: github.ref_type == 'tag'
+        run: docker buildx imagetools create -t "${RUNNER_IMAGE_REPO}:${GITHUB_REF_NAME}" "${RUNNER_IMAGE_REPO}:${GITHUB_SHA}"
