@@ -13,6 +13,8 @@ RUN apt-get update && \
       tmux \
       htop \
       sudo \
+      python3 \
+      python3-pip \
       iproute2 \
       iputils-ping \
       traceroute \
