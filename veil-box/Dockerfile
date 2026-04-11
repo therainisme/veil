@@ -15,6 +15,9 @@ RUN apt-get update && \
       sudo \
       python3 \
       python3-pip \
+      build-essential \
+      pkg-config \
+      libssl-dev \
       iproute2 \
       iputils-ping \
       traceroute \
