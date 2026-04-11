@@ -20,6 +20,8 @@ RUN apt-get update && \
       containerd.io \
       docker-buildx-plugin \
       docker-compose-plugin && \
+    mkdir -p /etc/docker && \
+    printf "{\n  \"storage-driver\": \"vfs\"\n}\n" > /etc/docker/daemon.json && \
     usermod -aG docker veil && \
     systemctl enable containerd.service docker.service && \
     apt-get clean && \
